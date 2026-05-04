@@ -1,0 +1,1602 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Daily Market Brief — 시장 한눈에 보기</title>
+<link rel="preconnect" href="https://s3.tradingview.com" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #f5f7fb;
+    --surface: #ffffff;
+    --surface-2: #fafbfd;
+    --border: #e6e9f0;
+    --text: #0f172a;
+    --text-sub: #5b6478;
+    --muted: #8b92a5;
+    --accent: #2563eb;
+    --accent-soft: #eaf1ff;
+    --green: #16a34a;
+    --red: #dc2626;
+    --amber: #d97706;
+    --shadow: 0 1px 2px rgba(15,23,42,.04), 0 8px 24px rgba(15,23,42,.06);
+    --radius: 14px;
+    --radius-sm: 10px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  a:hover { color: var(--accent); }
+
+  .wrap {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 28px 64px;
+  }
+
+  /* HEADER */
+  header.top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .brand-logo {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    display: grid; place-items: center;
+    color: #fff; font-weight: 800; font-size: 18px;
+    box-shadow: 0 6px 16px rgba(37, 99, 235, .25);
+  }
+  .brand h1 {
+    font-size: 20px; margin: 0; letter-spacing: -0.01em;
+  }
+  .brand p {
+    margin: 2px 0 0; font-size: 12.5px; color: var(--text-sub);
+  }
+  .clock {
+    display: flex; align-items: center; gap: 14px;
+    font-size: 13.5px; color: var(--text-sub);
+  }
+  .clock .pill {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    border-radius: 999px;
+    box-shadow: var(--shadow);
+    font-variant-numeric: tabular-nums;
+  }
+  .clock .pill b { color: var(--text); margin-right: 6px; }
+
+  /* TICKER TAPE */
+  .ticker-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    margin-bottom: 22px;
+  }
+
+  /* SECTIONS */
+  section { margin-bottom: 26px; }
+  .section-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin: 6px 4px 12px;
+  }
+  .section-head h2 {
+    font-size: 15px; margin: 0; letter-spacing: -0.01em;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-head h2::before {
+    content: "";
+    display: inline-block;
+    width: 4px; height: 14px;
+    background: var(--accent);
+    border-radius: 4px;
+  }
+  .section-head .hint { font-size: 12px; color: var(--muted); }
+
+  /* GRIDS */
+  .grid { display: grid; gap: 14px; }
+  .grid-kpi { grid-template-columns: repeat(6, 1fr); }
+  .grid-charts { grid-template-columns: repeat(3, 1fr); }
+  .grid-themes { grid-template-columns: repeat(3, 1fr); }
+  .grid-news { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 1100px) {
+    .grid-kpi { grid-template-columns: repeat(3, 1fr); }
+    .grid-charts { grid-template-columns: repeat(2, 1fr); }
+    .grid-themes { grid-template-columns: repeat(2, 1fr); }
+    .grid-news { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 640px) {
+    .grid-kpi { grid-template-columns: repeat(2, 1fr); }
+    .grid-charts, .grid-themes { grid-template-columns: 1fr; }
+    .wrap { padding: 18px 14px 40px; }
+  }
+
+  /* KPI CARD */
+  .kpi {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 14px 12px;
+    box-shadow: var(--shadow);
+    transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi:hover {
+    transform: translateY(-2px);
+    border-color: #c7d2fe;
+    box-shadow: 0 6px 16px rgba(37,99,235,.10);
+  }
+  .kpi .label {
+    font-size: 11.5px; color: var(--text-sub);
+    text-transform: uppercase; letter-spacing: .04em; font-weight: 600;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .kpi .label .ext {
+    font-size: 10px; color: var(--muted);
+    border: 1px solid var(--border); padding: 1px 6px; border-radius: 999px;
+  }
+  .kpi .embed { margin-top: 6px; }
+
+  /* CHART CARD */
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .chart-card .head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .chart-card .head h3 { margin: 0; font-size: 14px; }
+  .chart-card .head a {
+    font-size: 12px; color: var(--accent); font-weight: 600;
+  }
+  .chart-card .body { height: 220px; }
+
+  /* THEME CARD */
+  .theme-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .theme-card .th-head {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-2);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .theme-card .th-head .title { display: flex; align-items: center; gap: 10px; }
+  .theme-card .th-head .icon {
+    width: 32px; height: 32px; border-radius: 9px;
+    display: grid; place-items: center;
+    font-size: 16px;
+  }
+  .theme-card h3 { font-size: 14.5px; margin: 0; }
+  .theme-card .sub { font-size: 11.5px; color: var(--text-sub); margin-top: 1px; }
+  .theme-card .news-link {
+    font-size: 11.5px; color: var(--accent); font-weight: 600;
+    border: 1px solid var(--accent-soft);
+    padding: 4px 8px; border-radius: 999px;
+    background: var(--accent-soft);
+  }
+  .theme-card .stocks {
+    padding: 10px 12px;
+    display: grid; grid-template-columns: 1fr; gap: 6px;
+  }
+  .stock-row {
+    display: grid; grid-template-columns: 44px 1fr auto auto; align-items: center;
+    gap: 8px; padding: 8px 10px;
+    border-radius: 9px;
+    transition: background .12s ease;
+    text-decoration: none;
+  }
+  .stock-row:hover { background: #f1f5ff; }
+  .stock-row .flag {
+    font-size: 10.5px; font-weight: 700;
+    padding: 2px 6px; border-radius: 6px;
+    text-align: center;
+    background: #eef2f7; color: #475569;
+  }
+  .stock-row .flag.us { background: #ecfdf5; color: #047857; }
+  .stock-row .flag.kr { background: #eff6ff; color: #1d4ed8; }
+  .stock-row .name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .stock-row .ticker { font-size: 11.5px; color: var(--muted); }
+  .stock-row .ext-icon {
+    color: var(--muted); font-size: 13px;
+    padding: 2px 6px;
+  }
+  .stock-row:hover .ext-icon { color: var(--accent); }
+  .stock-row .news-icon {
+    font-size: 11.5px; font-weight: 700;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 3px 8px; border-radius: 999px;
+    border: 1px solid transparent;
+    transition: all .12s ease;
+  }
+  .stock-row .news-icon:hover {
+    background: #fff; border-color: var(--accent);
+  }
+
+  /* MARKET PULSE */
+  .pulse-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .pulse-card .ph {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-2);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .pulse-card .ph h3 { margin: 0; font-size: 14px; }
+  .pulse-card .ph .badge {
+    font-size: 11px; padding: 3px 8px; border-radius: 999px;
+    background: #fff; border: 1px solid var(--border); color: var(--text-sub);
+    font-weight: 600;
+  }
+  .pulse-card .pulse-body { height: 380px; }
+  .pulse-card .pulse-links {
+    border-top: 1px dashed var(--border);
+    padding: 8px 10px;
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .pulse-card .pulse-links a {
+    font-size: 11.5px; padding: 4px 10px; border-radius: 999px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    color: var(--text-sub); font-weight: 600;
+  }
+  .pulse-card .pulse-links a:hover { color: var(--accent); border-color: #c7d2fe; }
+
+  /* AI commentary inside pulse card */
+  .ai-comment {
+    padding: 12px 14px;
+    background: linear-gradient(180deg, #fafbff 0%, #ffffff 100%);
+    border-bottom: 1px solid var(--border);
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--text);
+  }
+  .ai-comment .ai-line {
+    display: flex; gap: 8px; padding: 4px 0;
+  }
+  .ai-comment .ai-line .lk {
+    flex-shrink: 0;
+    font-size: 10.5px; font-weight: 700;
+    padding: 1px 7px; border-radius: 999px;
+    background: var(--accent-soft); color: var(--accent);
+    height: 18px; display: inline-flex; align-items: center;
+  }
+  .ai-comment .ai-line .lv { color: var(--text-sub); }
+  .ai-comment .ai-line .lv b { color: var(--text); }
+
+  /* WHY (Today's analysis) */
+  .why-card {
+    background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%);
+    border: 1px solid #dbeafe;
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
+  }
+  .why-card .ai-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;
+    margin: 14px 0 0;
+  }
+  @media (max-width: 900px) { .why-card .ai-grid { grid-template-columns: 1fr; } }
+  .why-card .ai-block {
+    background: rgba(255,255,255,0.7);
+    border: 1px solid rgba(99,102,241,0.18);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .why-card .ai-block h4 {
+    font-size: 13px; margin: 0 0 6px;
+    display: flex; align-items: center; gap: 6px;
+    color: #1e293b;
+  }
+  .why-card .ai-block h4 .ic {
+    width: 22px; height: 22px; border-radius: 6px;
+    display: grid; place-items: center;
+    background: #eef2ff; color: #4338ca;
+    font-size: 13px;
+  }
+  .why-card .ai-block ul {
+    margin: 0; padding-left: 18px;
+    font-size: 12.5px; color: var(--text-sub);
+    line-height: 1.6;
+  }
+  .why-card .ai-block ul li { margin-bottom: 3px; }
+  .why-card .ai-block ul b { color: var(--text); }
+  .why-card .ai-meta {
+    margin-top: 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 8px;
+    font-size: 11.5px; color: var(--text-sub);
+    padding-top: 10px;
+    border-top: 1px dashed rgba(37,99,235,0.18);
+  }
+  .why-card .ai-theme-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    margin-top: 12px;
+  }
+  @media (max-width: 900px) { .why-card .ai-theme-row { grid-template-columns: 1fr; } }
+  .why-card .ai-theme {
+    background: #fff;
+    border: 1px solid #e0e7ff;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 12px; color: var(--text-sub);
+    line-height: 1.5;
+  }
+  .why-card .ai-theme b { color: var(--text); display: block; margin-bottom: 2px; font-size: 13px; }
+  .ai-disclaimer {
+    margin-top: 8px;
+    font-size: 11px; color: var(--muted); font-style: italic;
+  }
+  .why-card-legacy {
+    background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%);
+    border: 1px solid #dbeafe;
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    box-shadow: var(--shadow);
+  }
+  .why-card h3 {
+    margin: 0 0 10px;
+    font-size: 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .why-card h3 .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 4px rgba(37,99,235,.15);
+  }
+  .why-card p {
+    margin: 0 0 10px;
+    font-size: 13px; color: var(--text-sub); line-height: 1.55;
+  }
+  .why-card .why-links {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .why-card .why-links a {
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: #fff;
+    border: 1px solid #c7d2fe;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .why-card .why-links a:hover { background: var(--accent); color: #fff; }
+
+  /* THEME NEWS embed */
+  .theme-news-embed {
+    border-top: 1px solid var(--border);
+    height: 260px;
+    background: var(--surface-2);
+  }
+  .theme-mover-bar {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    padding: 8px 12px;
+    border-top: 1px dashed var(--border);
+    background: #fafbff;
+  }
+  .theme-mover-bar .mover {
+    font-size: 11.5px; font-weight: 700;
+    padding: 5px 10px; border-radius: 999px;
+    border: 1px solid var(--border); background: #fff;
+    color: var(--text-sub);
+    transition: all .12s ease;
+  }
+  .theme-mover-bar .mover.up:hover    { background:#ecfdf5; color:#047857; border-color:#a7f3d0; }
+  .theme-mover-bar .mover.down:hover  { background:#fef2f2; color:#dc2626; border-color:#fecaca; }
+  .theme-mover-bar .mover.why:hover   { background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
+
+  /* TIP BANNER */
+  .tip-banner {
+    display: flex; align-items: flex-start; gap: 10px;
+    background: linear-gradient(90deg, #fffbeb 0%, #fef3c7 100%);
+    border: 1px solid #fde68a;
+    border-radius: 12px;
+    padding: 11px 14px;
+    margin-bottom: 14px;
+    font-size: 12.5px; line-height: 1.55;
+    color: #78350f;
+  }
+  .tip-banner .tip-icon {
+    font-size: 18px; flex-shrink: 0; line-height: 1;
+  }
+  .tip-banner b { color: #92400e; }
+  .tip-banner kbd {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    background: #fff;
+    border: 1px solid #fcd34d;
+    border-radius: 4px;
+    padding: 1px 5px;
+    color: #92400e;
+  }
+  .tip-banner .close {
+    margin-left: auto;
+    color: #b45309; cursor: pointer;
+    font-weight: 700;
+  }
+
+  /* TRANSLATION TOGGLE */
+  .translate-toggle {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 999px;
+    box-shadow: var(--shadow);
+    font-size: 12.5px;
+    color: var(--text-sub);
+    cursor: pointer;
+    user-select: none;
+    transition: all .12s ease;
+  }
+  .translate-toggle:hover { color: var(--accent); border-color: #c7d2fe; }
+  .translate-toggle .switch {
+    width: 30px; height: 18px;
+    background: #d1d5db; border-radius: 999px; position: relative;
+    transition: background .15s ease;
+  }
+  .translate-toggle .switch::after {
+    content: ""; position: absolute;
+    top: 2px; left: 2px;
+    width: 14px; height: 14px;
+    background: #fff; border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    transition: transform .15s ease;
+  }
+  .translate-toggle.on { color: var(--accent); border-color: #c7d2fe; background: var(--accent-soft); }
+  .translate-toggle.on .switch { background: var(--accent); }
+  .translate-toggle.on .switch::after { transform: translateX(12px); }
+
+  /* HOTLIST / MOVERS */
+  .mover-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .mover-card .mh {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-2);
+  }
+  .mover-card .mh h3 { margin: 0; font-size: 14px; }
+  .mover-card .mh .mh-tag {
+    font-size: 11px; font-weight: 700;
+    padding: 3px 9px; border-radius: 999px;
+  }
+  .mh-tag.up { background:#ecfdf5; color:#047857; }
+  .mh-tag.down { background:#fef2f2; color:#dc2626; }
+  .mh-tag.heat { background:#fff7ed; color:#c2410c; }
+  .mh-tag.kr { background:#eff6ff; color:#1d4ed8; }
+  .mover-card .mb { height: 360px; }
+  .mover-card .quick-links {
+    border-top: 1px dashed var(--border);
+    padding: 8px 12px;
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .mover-card .quick-links a {
+    font-size: 11.5px; font-weight: 600;
+    padding: 4px 10px; border-radius: 999px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    color: var(--text-sub);
+  }
+  .mover-card .quick-links a:hover { color: var(--accent); border-color: #c7d2fe; }
+
+  /* DAILY MORNING BRIEF */
+  .brief-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+  }
+  @media (max-width: 1100px) { .brief-grid { grid-template-columns: repeat(2,1fr); } }
+  @media (max-width: 640px) { .brief-grid { grid-template-columns: 1fr; } }
+  .brief-tile {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    transition: all .12s ease;
+    box-shadow: var(--shadow);
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .brief-tile:hover { transform: translateY(-2px); border-color: #c7d2fe; }
+  .brief-tile .src-badge {
+    font-size: 10.5px; font-weight: 700;
+    padding: 2px 8px; border-radius: 999px;
+    align-self: flex-start;
+    color: #fff;
+  }
+  .brief-tile .title {
+    font-size: 13.5px; font-weight: 700; color: var(--text);
+    line-height: 1.35;
+  }
+  .brief-tile .meta {
+    font-size: 11.5px; color: var(--muted);
+    margin-top: 3px;
+  }
+  .brief-tile .lang {
+    margin-left: auto;
+    font-size: 10.5px; color: var(--text-sub);
+    background: var(--surface-2);
+    padding: 1px 7px; border-radius: 999px;
+    border: 1px solid var(--border);
+  }
+  .brief-tile-head {
+    display: flex; align-items: center; gap: 6px;
+  }
+  .theme-news-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 12px;
+    border-top: 1px solid var(--border);
+    background: var(--surface-2);
+    font-size: 11.5px; color: var(--text-sub);
+  }
+  .theme-news-toolbar a {
+    color: var(--accent); font-weight: 600;
+  }
+
+  /* NEWS CARD */
+  .news-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .news-card .nh {
+    padding: 12px 14px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface-2);
+  }
+  .news-card .nh h3 { margin: 0; font-size: 14px; }
+  .news-card .nh .src-pill {
+    font-size: 11.5px; padding: 3px 10px; border-radius: 999px;
+    background: #fff; border: 1px solid var(--border); color: var(--text-sub);
+  }
+  .news-list { padding: 6px 8px 10px; }
+  .news-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 10px; border-radius: 9px;
+    transition: background .12s ease;
+  }
+  .news-item:hover { background: #f1f5ff; }
+  .news-item .src {
+    font-size: 11px; font-weight: 700; color: #fff;
+    width: 60px; text-align: center;
+    padding: 3px 0; border-radius: 6px;
+    flex-shrink: 0;
+  }
+  .src.bbg { background: #d97706; }
+  .src.reu { background: #ef4444; }
+  .src.cnbc { background: #005594; }
+  .src.yh { background: #6001d2; }
+  .src.wsj { background: #1f2937; }
+  .src.ft  { background: #ec4899; }
+  .src.naver { background: #03c75a; }
+  .src.han { background: #1d4ed8; }
+  .src.mk  { background: #dc2626; }
+  .src.ed  { background: #0d9488; }
+  .src.dt  { background: #4338ca; }
+  .src.zd  { background: #f59e0b; }
+  .news-item .title {
+    flex: 1; font-size: 13px; line-height: 1.35; color: var(--text);
+  }
+  .news-item .arrow { color: var(--muted); font-size: 13px; }
+
+  /* FOOTER */
+  footer {
+    margin-top: 36px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  footer a { color: var(--accent); }
+
+  /* Quick-links bar */
+  .quicklinks {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-top: 4px;
+  }
+  .ql {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 6px 12px; border-radius: 999px;
+    font-size: 12px; font-weight: 600;
+    color: var(--text-sub);
+    box-shadow: var(--shadow);
+    transition: all .12s ease;
+  }
+  .ql:hover { color: var(--accent); border-color: #c7d2fe; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <header class="top">
+    <div class="brand">
+      <div class="brand-logo">M</div>
+      <div>
+        <h1>Daily Market Brief</h1>
+        <p>미국 주식 · 환율 · 인덱스 · 6대 테마주를 한눈에</p>
+      </div>
+    </div>
+    <div class="clock">
+      <div class="pill"><b>KST</b><span id="kst">--:--:--</span></div>
+      <div class="pill"><b>NY</b><span id="ny">--:--:--</span></div>
+      <div class="pill" id="datepill"><b>Date</b><span id="today">--</span></div>
+      <div class="translate-toggle on" id="translateToggle" title="영문 뉴스를 Google 번역(*.translate.goog)으로 자동 변환">
+        <span>🌐 영문 자동 번역</span>
+        <span class="switch"></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- TIP BANNER : translation guidance -->
+  <div class="tip-banner" id="tipBanner">
+    <span class="tip-icon">💡</span>
+    <div>
+      <b>영문 자동 번역 안내</b> — Bloomberg / WSJ / FT 등 일부 사이트는 외부 번역 프록시(<kbd>translate.goog</kbd>)를 차단해 무한 로딩이 발생합니다.
+      <br>
+      • <b>가장 안정적인 방법</b>: Chrome / Edge / Whale 브라우저에서 영문 페이지가 열린 후 <kbd>주소창 옆 번역 아이콘</kbd> 또는 <kbd>우클릭 → "한국어로 번역"</kbd>.<br>
+      • 각 영문 링크 옆 <span style="background:#16a34a;color:#fff;padding:1px 6px;border-radius:6px;font-weight:700;font-size:10.5px;">🌐 KO</span> 는 Google 번역, <span style="background:#03c75a;color:#fff;padding:1px 6px;border-radius:6px;font-weight:700;font-size:10.5px;">P</span> 는 Naver Papago 사이트 번역으로 시도합니다 (메인 클릭은 항상 원문이라 안전).
+      <br>
+      • Bloomberg / WSJ / FT 등 차단된 사이트는 자동으로 <b>P (Papago)</b> 버튼만 표시됩니다.
+    </div>
+    <span class="close" id="tipClose" title="이 안내 닫기">×</span>
+  </div>
+
+  <!-- QUICK LINKS -->
+  <div class="quicklinks" style="margin-bottom:14px;">
+    <a class="ql" data-en="true" href="https://finance.yahoo.com/" target="_blank" rel="noopener">Yahoo Finance ↗</a>
+    <a class="ql" data-en="true" href="https://www.tradingview.com/markets/" target="_blank" rel="noopener">TradingView ↗</a>
+    <a class="ql" data-en="true" href="https://www.bloomberg.com/markets" target="_blank" rel="noopener">Bloomberg ↗</a>
+    <a class="ql" data-en="true" href="https://www.reuters.com/markets/" target="_blank" rel="noopener">Reuters Markets ↗</a>
+    <a class="ql" data-en="true" href="https://www.cnbc.com/world-markets/" target="_blank" rel="noopener">CNBC ↗</a>
+    <a class="ql" href="https://finance.naver.com/" target="_blank" rel="noopener">네이버 증권 ↗</a>
+    <a class="ql" href="https://www.hankyung.com/globalmarket" target="_blank" rel="noopener">한경 글로벌마켓 ↗</a>
+    <a class="ql" href="https://stock.mk.co.kr/" target="_blank" rel="noopener">매경 증권 ↗</a>
+    <a class="ql" href="https://kr.investing.com/" target="_blank" rel="noopener">Investing.com KR ↗</a>
+  </div>
+
+  <!-- TICKER TAPE -->
+  <div class="ticker-card">
+    <div class="tradingview-widget-container">
+      <div class="tradingview-widget-container__widget"></div>
+      <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+      {
+        "symbols": [
+          {"description":"S&P 500","proName":"FOREXCOM:SPXUSD"},
+          {"description":"NASDAQ 100","proName":"FOREXCOM:NSXUSD"},
+          {"description":"DOW","proName":"FOREXCOM:DJI"},
+          {"description":"VIX","proName":"CBOE:VIX"},
+          {"description":"USD/KRW","proName":"FX_IDC:USDKRW"},
+          {"description":"WTI","proName":"TVC:USOIL"},
+          {"description":"GOLD","proName":"TVC:GOLD"},
+          {"description":"US10Y","proName":"TVC:US10Y"},
+          {"description":"BTC","proName":"BITSTAMP:BTCUSD"},
+          {"description":"ETH","proName":"BITSTAMP:ETHUSD"},
+          {"description":"KOSPI","proName":"KRX:KOSPI"},
+          {"description":"NVIDIA","proName":"NASDAQ:NVDA"},
+          {"description":"TESLA","proName":"NASDAQ:TSLA"},
+          {"description":"APPLE","proName":"NASDAQ:AAPL"}
+        ],
+        "showSymbolLogo": true,
+        "isTransparent": false,
+        "displayMode": "adaptive",
+        "colorTheme": "light",
+        "locale": "kr"
+      }
+      </script>
+    </div>
+  </div>
+
+  <!-- KPI : 핵심 지표 -->
+  <section>
+    <div class="section-head">
+      <h2>핵심 지표</h2>
+      <span class="hint">카드 클릭 시 TradingView 차트로 이동</span>
+    </div>
+    <div class="grid grid-kpi">
+      <a class="kpi" href="https://www.tradingview.com/symbols/FX_IDC-USDKRW/" target="_blank" rel="noopener">
+        <div class="label">USD / KRW <span class="ext">↗</span></div>
+        <div class="embed">
+          <div class="tradingview-widget-container">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+            {"symbol":"FX_IDC:USDKRW","width":"100%","colorTheme":"light","isTransparent":true,"locale":"kr"}
+            </script>
+          </div>
+        </div>
+      </a>
+      <a class="kpi" href="https://www.tradingview.com/symbols/SPX/" target="_blank" rel="noopener">
+        <div class="label">S&amp;P 500 <span class="ext">↗</span></div>
+        <div class="embed">
+          <div class="tradingview-widget-container">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+            {"symbol":"FOREXCOM:SPXUSD","width":"100%","colorTheme":"light","isTransparent":true,"locale":"kr"}
+            </script>
+          </div>
+        </div>
+      </a>
+      <a class="kpi" href="https://www.tradingview.com/symbols/NDX/" target="_blank" rel="noopener">
+        <div class="label">NASDAQ 100 <span class="ext">↗</span></div>
+        <div class="embed">
+          <div class="tradingview-widget-container">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+            {"symbol":"FOREXCOM:NSXUSD","width":"100%","colorTheme":"light","isTransparent":true,"locale":"kr"}
+            </script>
+          </div>
+        </div>
+      </a>
+      <a class="kpi" href="https://www.tradingview.com/symbols/DJI/" target="_blank" rel="noopener">
+        <div class="label">DOW JONES <span class="ext">↗</span></div>
+        <div class="embed">
+          <div class="tradingview-widget-container">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+            {"symbol":"FOREXCOM:DJI","width":"100%","colorTheme":"light","isTransparent":true,"locale":"kr"}
+            </script>
+          </div>
+        </div>
+      </a>
+      <a class="kpi" href="https://www.tradingview.com/symbols/CBOE-VIX/" target="_blank" rel="noopener">
+        <div class="label">VIX 변동성 <span class="ext">↗</span></div>
+        <div class="embed">
+          <div class="tradingview-widget-container">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+            {"symbol":"CBOE:VIX","width":"100%","colorTheme":"light","isTransparent":true,"locale":"kr"}
+            </script>
+          </div>
+        </div>
+      </a>
+      <a class="kpi" href="https://finance.naver.com/sise/" target="_blank" rel="noopener">
+        <div class="label">KOSPI <span class="ext">↗</span></div>
+        <div class="embed">
+          <div class="tradingview-widget-container">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+            {"symbol":"KRX:KOSPI","width":"100%","colorTheme":"light","isTransparent":true,"locale":"kr"}
+            </script>
+          </div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- MAIN INDEX CHARTS -->
+  <section>
+    <div class="section-head">
+      <h2>주요 인덱스 차트</h2>
+      <span class="hint">실시간 가격 추이 (TradingView)</span>
+    </div>
+    <div class="grid grid-charts">
+      <div class="chart-card">
+        <div class="head">
+          <h3>S&amp;P 500</h3>
+          <a href="https://www.tradingview.com/symbols/SPX/" target="_blank" rel="noopener">차트 열기 ↗</a>
+        </div>
+        <div class="body">
+          <div class="tradingview-widget-container" style="height:100%;">
+            <div class="tradingview-widget-container__widget" style="height:100%;"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+            {"symbol":"FOREXCOM:SPXUSD","width":"100%","height":"100%","locale":"kr","dateRange":"3M","colorTheme":"light","isTransparent":true,"autosize":true,"largeChartUrl":""}
+            </script>
+          </div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="head">
+          <h3>NASDAQ 100</h3>
+          <a href="https://www.tradingview.com/symbols/NDX/" target="_blank" rel="noopener">차트 열기 ↗</a>
+        </div>
+        <div class="body">
+          <div class="tradingview-widget-container" style="height:100%;">
+            <div class="tradingview-widget-container__widget" style="height:100%;"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+            {"symbol":"FOREXCOM:NSXUSD","width":"100%","height":"100%","locale":"kr","dateRange":"3M","colorTheme":"light","isTransparent":true,"autosize":true}
+            </script>
+          </div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="head">
+          <h3>USD / KRW</h3>
+          <a href="https://www.tradingview.com/symbols/USDKRW/" target="_blank" rel="noopener">차트 열기 ↗</a>
+        </div>
+        <div class="body">
+          <div class="tradingview-widget-container" style="height:100%;">
+            <div class="tradingview-widget-container__widget" style="height:100%;"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+            {"symbol":"FX_IDC:USDKRW","width":"100%","height":"100%","locale":"kr","dateRange":"3M","colorTheme":"light","isTransparent":true,"autosize":true}
+            </script>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 오늘의 마켓 펄스 (Why) -->
+  <section>
+    <div class="section-head">
+      <h2>오늘의 마켓 펄스 — 왜 올랐나 / 왜 떨어졌나</h2>
+      <span class="hint">테크니컬 분석 + 매체별 마감 시황(데일리 마켓 랩업)</span>
+    </div>
+
+    <!-- AI Market Commentary card -->
+    <div class="why-card" style="margin-bottom:14px;">
+      <h3><span class="dot"></span>AI 마켓 분석가 코멘트 — 2026.05.04 (월)</h3>
+      <p style="margin:0;">
+        <b>오늘의 한 줄 진단:</b> 시장은 "<b>금리 인하 기대를 가격에 선반영한 후, 실적·가이던스가 그 기대에 부합하는지 확인</b>"하는 2단계 구간.
+        매크로 데이터보다 <b>실제 빅테크 실적과 가이던스</b>가 단기 변동성을 좌우하는 시기. AI capex와 전력 수요(원전 모멘텀), 지정학(방산·환율)이 중기 테마를 끌고 가는 중.
+      </p>
+
+      <div class="ai-grid">
+        <div class="ai-block">
+          <h4><span class="ic">📊</span> 거시 환경 (Macro)</h4>
+          <ul>
+            <li><b>Fed 사이클:</b> 인하 사이클 후반부. 추가 인하 기대 vs. "higher for longer" 우려 균형. 점도표·의사록 수정시 단기 변동성 확대.</li>
+            <li><b>인플레:</b> 헤드라인 CPI 둔화 추세, 그러나 서비스/주거비 stickiness가 잔존. <b>Core PCE 2% 수렴 속도</b>가 키.</li>
+            <li><b>금리 곡선:</b> 미 10년물 4% 부근. <b>4.5% 위 = 성장주 압박</b>, <b>3.5% 아래 = 가치→성장 자금 이동</b>.</li>
+          </ul>
+        </div>
+        <div class="ai-block">
+          <h4><span class="ic">💧</span> 유동성 / 자금 흐름</h4>
+          <ul>
+            <li><b>USD/KRW:</b> <b>1,300원대 박스 = 외국인 매수 우호적</b>. 1,400원 돌파시 외국인 자금 이탈 압력 → KOSPI 약세 신호.</li>
+            <li><b>달러 인덱스(DXY):</b> 박스권 내 등락. 달러 강세 재개시 신흥국·원자재 동시 압박.</li>
+            <li><b>원자재:</b> WTI 70-90 박스, 골드는 사상최고가 부근 — 지정학·중앙은행 매수 헤지 수요 지속.</li>
+          </ul>
+        </div>
+        <div class="ai-block">
+          <h4><span class="ic">🔄</span> 섹터 로테이션</h4>
+          <ul>
+            <li><b>AI 인프라 → 엔드디맨드:</b> NVDA 같은 픽앤셰벨에서 <b>AI 활용 매출이 나오는 기업</b>으로 자금 이동 시도. 실적 시즌이 검증대.</li>
+            <li><b>장기 구조테마</b>: 방산·원전·로봇 — 변동성에도 자금 유입 지속 (지정학 + AI 전력).</li>
+            <li><b>방어 vs 위험:</b> VIX 15 아래 = 위험선호, 20 위 = 헷지 수요. 현재 시점 VIX 위치를 위 위젯에서 확인.</li>
+          </ul>
+        </div>
+        <div class="ai-block">
+          <h4><span class="ic">📅</span> 이번 주 핵심 변수</h4>
+          <ul>
+            <li><b>미국:</b> 주간 신청 실업수당 (목), <b>4월 PPI/CPI 발표</b>, FOMC 의사록(있을 경우), 빅테크 실적 시즌 막바지.</li>
+            <li><b>한국:</b> 한국은행 금통위 일정·외환시장 코멘트, 외국인 순매수/순매도 데이터(가장 빠른 선행지표).</li>
+            <li><b>지정학:</b> 우크라·중동·대만해협 — 헤드라인 리스크가 방산/원유/안전자산 단기 변동 트리거.</li>
+          </ul>
+        </div>
+      </div>
+
+      <h4 style="margin:18px 0 0;font-size:13px;color:#1e293b;">🎯 6대 테마 한 줄 코멘트</h4>
+      <div class="ai-theme-row">
+        <div class="ai-theme"><b>🧠 AI / 반도체</b>데이터센터 capex 2026 전망 상향 vs. <b>ASIC(구글 TPU·MS Maia) 자체 칩 위협</b>. NVDA의 점유율 방어와 HBM3E/HBM4 양산 일정이 핵심. 한국은 SK하이닉스·삼성전자가 NVDA 가이던스에 직결.</div>
+        <div class="ai-theme"><b>🔋 2차전지</b>중국 LFP 가격 압박 지속, K-배터리는 <b>미국 IRA 보조금 + 신차 수주</b>가 단기 반등 트리거. 리튬가격 바닥 다지기 신호 + 캐즘 종료 시그널 watching.</div>
+        <div class="ai-theme"><b>🧬 바이오 / 제약</b>GLP-1 1차 정점 후 <b>2차 적응증 확장(알츠하이머·심혈관·MASH)</b> 모멘텀이 다음 트리거. 알테오젠 SC 라이센스, 대형 M&amp;A 기대.</div>
+        <div class="ai-theme"><b>🛡️ 방산</b>우크라 + 중동 + 동아시아 안보 = <b>구조적 멀티이어 사이클</b>. 한화에어로·LIG의 <b>K2/천무 폴란드 추가 계약</b>, 미국 NDAA 예산 watching.</div>
+        <div class="ai-theme"><b>⚛️ 원전</b>AI 전력 수요 폭증 → <b>SMR 모멘텀 핵심</b>. 두산에너빌리티 = SMR 메인 수혜, CEG/VST = 미국 데이터센터 PPA 추가 계약 여부가 catalyst.</div>
+        <div class="ai-theme"><b>🤖 로봇</b>휴머노이드(Optimus·Figure)는 <b>실증→양산까지 시간 필요</b>. 단기는 산업용 로봇(레인보우·두산로보·에스피지) 수주 모멘텀이 catalyst.</div>
+      </div>
+
+      <div class="ai-meta">
+        <div>
+          ⓘ <b>마지막 업데이트:</b> <span id="aiUpdatedAt">2026.05.04</span> · 이 코멘트는 일반 매크로 사이클 + 섹터 동향 프레임워크 기반입니다. 실시간 시세 변동 사유는 아래 매수/매도 시그널 + 마감 시황 기사를 함께 확인하세요.
+        </div>
+        <div class="why-links" style="display:flex;flex-wrap:wrap;gap:6px;">
+          <a data-en="true" href="https://www.cnbc.com/markets/" target="_blank" rel="noopener">CNBC 마감 시황 ↗</a>
+          <a data-en="true" href="https://www.bloomberg.com/markets/stocks" target="_blank" rel="noopener">Bloomberg Wrap ↗</a>
+          <a data-en="true" href="https://www.reuters.com/markets/wealth/" target="_blank" rel="noopener">Reuters Wrap ↗</a>
+          <a data-en="true" href="https://finance.yahoo.com/news/stock-market-news-live/" target="_blank" rel="noopener">Yahoo Live ↗</a>
+          <a href="https://www.hankyung.com/globalmarket" target="_blank" rel="noopener">한경 글로벌 ↗</a>
+          <a href="https://news.naver.com/breakingnews/section/101/258" target="_blank" rel="noopener">네이버 마감 ↗</a>
+        </div>
+      </div>
+      <div class="ai-disclaimer">※ 코멘트 업데이트는 "오늘 마켓 코멘트 새로고침해줘"라고 말씀하시면 최신 시황을 반영해 다시 작성해 드립니다.</div>
+    </div>
+
+    <div class="grid grid-charts">
+      <div class="pulse-card">
+        <div class="ph">
+          <h3>S&amp;P 500 시장 시그널</h3>
+          <span class="badge">Buy/Sell</span>
+        </div>
+        <div class="ai-comment">
+          <div class="ai-line"><span class="lk">진단</span><span class="lv">광범위한 미국 시장 바로미터. 박스권 상단·하단 양 끝에서 분할 대응 권장.</span></div>
+          <div class="ai-line"><span class="lk">시그널</span><span class="lv">아래 위젯의 <b>'Strong Buy'</b>는 단기 모멘텀. 단, <b>VIX 15 아래 + RSI 70 위 동반시 차익실현 구간</b>으로 해석.</span></div>
+          <div class="ai-line"><span class="lk">리스크</span><span class="lv">미 10년물 4.5% 돌파 / 빅테크 가이던스 하향 / VIX 20 돌파 → 단기 조정 트리거.</span></div>
+          <div class="ai-line"><span class="lk">전략</span><span class="lv">위 시그널 1D = 추세, 1W = 포지션. <b>1D와 1W 모두 Buy면 추세 추종</b>, 한쪽이 Neutral이면 분할 대응.</span></div>
+        </div>
+        <div class="pulse-body">
+          <div class="tradingview-widget-container" style="height:100%;">
+            <div class="tradingview-widget-container__widget" style="height:100%;"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" async>
+            {"interval":"1D","width":"100%","height":"100%","isTransparent":true,"symbol":"FOREXCOM:SPXUSD","showIntervalTabs":true,"locale":"kr","colorTheme":"light"}
+            </script>
+          </div>
+        </div>
+        <div class="pulse-links">
+          <a data-en="true" href="https://www.tradingview.com/symbols/SPX/news/" target="_blank" rel="noopener">SPX 뉴스 ↗</a>
+          <a href="https://news.google.com/search?q=S%26P+500+today&hl=ko" target="_blank" rel="noopener">오늘의 S&amp;P 뉴스 ↗</a>
+        </div>
+      </div>
+
+      <div class="pulse-card">
+        <div class="ph">
+          <h3>NASDAQ 100 시장 시그널</h3>
+          <span class="badge">Buy/Sell</span>
+        </div>
+        <div class="ai-comment">
+          <div class="ai-line"><span class="lk">진단</span><span class="lv">매그니피센트 7(M7)이 <b>지수의 ~50% 가중</b>. M7 실적·가이던스가 NDX 방향 결정.</span></div>
+          <div class="ai-line"><span class="lk">시그널</span><span class="lv">NVDA 비중 ~10%. <b>NVDA 5% 빠지면 NDX 약 -1.5% 충격</b>. 위 매수/매도 시그널은 M7 가중평균 영향이 큼.</span></div>
+          <div class="ai-line"><span class="lk">리스크</span><span class="lv">AI capex 둔화 우려 / ASIC 자체칩 위협 / 빅테크 antitrust 헤드라인 → 변동성 확대.</span></div>
+          <div class="ai-line"><span class="lk">전략</span><span class="lv">실적 시즌 막바지엔 변동성 축소 기대. <b>NVDA·MSFT·META 가이던스 어시</b>가 NDX 단기 방향 결정.</span></div>
+        </div>
+        <div class="pulse-body">
+          <div class="tradingview-widget-container" style="height:100%;">
+            <div class="tradingview-widget-container__widget" style="height:100%;"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" async>
+            {"interval":"1D","width":"100%","height":"100%","isTransparent":true,"symbol":"FOREXCOM:NSXUSD","showIntervalTabs":true,"locale":"kr","colorTheme":"light"}
+            </script>
+          </div>
+        </div>
+        <div class="pulse-links">
+          <a data-en="true" href="https://www.tradingview.com/symbols/NDX/news/" target="_blank" rel="noopener">NDX 뉴스 ↗</a>
+          <a href="https://news.google.com/search?q=Nasdaq+today&hl=ko" target="_blank" rel="noopener">오늘의 NASDAQ 뉴스 ↗</a>
+        </div>
+      </div>
+
+      <div class="pulse-card">
+        <div class="ph">
+          <h3>KOSPI 시장 시그널</h3>
+          <span class="badge">Buy/Sell</span>
+        </div>
+        <div class="ai-comment">
+          <div class="ai-line"><span class="lk">진단</span><span class="lv">한국 시장은 <b>"반도체 가중치" 시장</b> — 삼성전자+SK하이닉스가 KOSPI의 ~30%.</span></div>
+          <div class="ai-line"><span class="lk">시그널</span><span class="lv"><b>HBM3E/HBM4 양산 일정 + NVDA 가이던스</b>가 KOSPI 방향 직결. 외국인 순매수가 가장 빠른 선행지표.</span></div>
+          <div class="ai-line"><span class="lk">리스크</span><span class="lv">USD/KRW <b>1,400원 위 = 외국인 매도</b> 압력, <b>1,350원 아래 = 외국인 매수</b> 패턴. 환율을 함께 봐야 함.</span></div>
+          <div class="ai-line"><span class="lk">전략</span><span class="lv">반도체 양산 모멘텀 + 방산·원전·로봇 구조테마 두 트랙 병행. 외국인 매도세 진입시 분할 매수 전략.</span></div>
+        </div>
+        <div class="pulse-body">
+          <div class="tradingview-widget-container" style="height:100%;">
+            <div class="tradingview-widget-container__widget" style="height:100%;"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" async>
+            {"interval":"1D","width":"100%","height":"100%","isTransparent":true,"symbol":"KRX:KOSPI","showIntervalTabs":true,"locale":"kr","colorTheme":"light"}
+            </script>
+          </div>
+        </div>
+        <div class="pulse-links">
+          <a href="https://news.google.com/search?q=KOSPI+%EC%98%A4%EB%8A%98&hl=ko" target="_blank" rel="noopener">오늘의 KOSPI 뉴스 ↗</a>
+          <a href="https://finance.naver.com/sise/" target="_blank" rel="noopener">네이버 시세 ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live news timeline (all markets) -->
+    <div class="grid grid-news" style="margin-top:14px;">
+      <div class="chart-card">
+        <div class="head">
+          <h3>실시간 마켓 뉴스 타임라인 (글로벌)</h3>
+          <a href="https://www.tradingview.com/news-flow/" target="_blank" rel="noopener">전체 뉴스 ↗</a>
+        </div>
+        <div class="body" style="height:380px;">
+          <div class="tradingview-widget-container" style="height:100%;">
+            <div class="tradingview-widget-container__widget" style="height:100%;"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js" async>
+            {"feedMode":"all_symbols","colorTheme":"light","isTransparent":true,"displayMode":"regular","width":"100%","height":"100%","locale":"kr"}
+            </script>
+          </div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="head">
+          <h3>실시간 미국 주요 종목 뉴스 (NVDA·TSLA·AAPL)</h3>
+          <a href="https://finance.yahoo.com/topic/stock-market-news/" target="_blank" rel="noopener">전체 뉴스 ↗</a>
+        </div>
+        <div class="body" style="height:380px;">
+          <div class="tradingview-widget-container" style="height:100%;">
+            <div class="tradingview-widget-container__widget" style="height:100%;"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js" async>
+            {"feedMode":"market","market":"stock","colorTheme":"light","isTransparent":true,"displayMode":"regular","width":"100%","height":"100%","locale":"kr"}
+            </script>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 데일리 모닝 브리프 (큐레이션 요약) -->
+  <section>
+    <div class="section-head">
+      <h2>데일리 모닝 브리프 — 5분 요약</h2>
+      <span class="hint">매일 새로 올라오는 핵심 요약 기사 (영문은 자동 번역 적용)</span>
+    </div>
+    <div class="brief-grid" id="brief-grid">
+      <!-- injected by JS -->
+    </div>
+  </section>
+
+  <!-- 오늘의 무빙 (급등주/급락주) -->
+  <section>
+    <div class="section-head">
+      <h2>오늘의 무빙 — 급등주 · 급락주</h2>
+      <span class="hint">탭(Active / Gainers / Losers)으로 전환 가능 · 종목 클릭 시 차트로 이동</span>
+    </div>
+    <div class="grid grid-charts">
+      <div class="mover-card">
+        <div class="mh">
+          <h3>🇺🇸 미국 시장 핫리스트</h3>
+          <span class="mh-tag heat">Active · Gainers · Losers</span>
+        </div>
+        <div class="mb">
+          <div class="tradingview-widget-container" style="height:100%;">
+            <div class="tradingview-widget-container__widget" style="height:100%;"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-hotlists.js" async>
+            {"colorTheme":"light","dateRange":"1D","exchange":"US","showChart":true,"locale":"kr","largeChartUrl":"","isTransparent":true,"showSymbolLogo":true,"showFloatingTooltip":false,"width":"100%","height":"100%","plotLineColorGrowing":"rgba(22,163,74,1)","plotLineColorFalling":"rgba(220,38,38,1)","gridLineColor":"rgba(240,243,250,0)","scaleFontColor":"rgba(106,109,120,1)","belowLineFillColorGrowing":"rgba(22,163,74,0.12)","belowLineFillColorFalling":"rgba(220,38,38,0.12)","belowLineFillColorGrowingBottom":"rgba(22,163,74,0)","belowLineFillColorFallingBottom":"rgba(220,38,38,0)","symbolActiveColor":"rgba(37,99,235,0.12)"}
+            </script>
+          </div>
+        </div>
+        <div class="quick-links">
+          <a data-en="true" href="https://finance.yahoo.com/markets/stocks/gainers/" target="_blank" rel="noopener">Yahoo Gainers ↗</a>
+          <a data-en="true" href="https://finance.yahoo.com/markets/stocks/losers/" target="_blank" rel="noopener">Yahoo Losers ↗</a>
+          <a data-en="true" href="https://finance.yahoo.com/markets/stocks/most-active/" target="_blank" rel="noopener">Most Active ↗</a>
+          <a data-en="true" href="https://finance.yahoo.com/markets/stocks/trending/" target="_blank" rel="noopener">Trending Tickers ↗</a>
+        </div>
+      </div>
+
+      <div class="mover-card">
+        <div class="mh">
+          <h3>🔥 미국 주식 히트맵</h3>
+          <span class="mh-tag heat">시각적 색깔로 한눈에</span>
+        </div>
+        <div class="mb">
+          <div class="tradingview-widget-container" style="height:100%;">
+            <div class="tradingview-widget-container__widget" style="height:100%;"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-stock-heatmap.js" async>
+            {"exchanges":[],"dataSource":"SPX500","grouping":"sector","blockSize":"market_cap_basic","blockColor":"change","locale":"kr","symbolUrl":"","colorTheme":"light","hasTopBar":true,"isDataSetEnabled":true,"isZoomEnabled":true,"hasSymbolTooltip":true,"isMonoSize":false,"width":"100%","height":"100%"}
+            </script>
+          </div>
+        </div>
+        <div class="quick-links">
+          <a data-en="true" href="https://www.tradingview.com/markets/stocks-usa/market-movers-gainers/" target="_blank" rel="noopener">TV Gainers ↗</a>
+          <a data-en="true" href="https://www.tradingview.com/markets/stocks-usa/market-movers-losers/" target="_blank" rel="noopener">TV Losers ↗</a>
+          <a data-en="true" href="https://www.tradingview.com/markets/stocks-usa/sectorandindustry-sector/" target="_blank" rel="noopener">섹터별 시황 ↗</a>
+        </div>
+      </div>
+
+      <div class="mover-card">
+        <div class="mh">
+          <h3>🇰🇷 KOSPI / KOSDAQ 등락 상위</h3>
+          <span class="mh-tag kr">네이버 증권 공식</span>
+        </div>
+        <div class="mb" style="overflow:auto; padding:14px;">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <a class="brief-tile" href="https://finance.naver.com/sise/sise_rise.naver" target="_blank" rel="noopener">
+              <span class="src-badge" style="background:#16a34a;">▲ 상승률 상위</span>
+              <div class="title">코스피·코스닥 상승률 TOP</div>
+              <div class="meta">실시간 갱신 · 네이버 증권</div>
+            </a>
+            <a class="brief-tile" href="https://finance.naver.com/sise/sise_fall.naver" target="_blank" rel="noopener">
+              <span class="src-badge" style="background:#dc2626;">▼ 하락률 상위</span>
+              <div class="title">코스피·코스닥 하락률 TOP</div>
+              <div class="meta">실시간 갱신 · 네이버 증권</div>
+            </a>
+            <a class="brief-tile" href="https://finance.naver.com/sise/sise_quant.naver" target="_blank" rel="noopener">
+              <span class="src-badge" style="background:#7c3aed;">⇅ 거래량 상위</span>
+              <div class="title">거래량 TOP — 시장의 관심</div>
+              <div class="meta">실시간 갱신 · 네이버 증권</div>
+            </a>
+            <a class="brief-tile" href="https://finance.naver.com/sise/sise_market_sum.naver" target="_blank" rel="noopener">
+              <span class="src-badge" style="background:#0369a1;">📊 시가총액 상위</span>
+              <div class="title">시총 상위 종목</div>
+              <div class="meta">실시간 갱신 · 네이버 증권</div>
+            </a>
+            <a class="brief-tile" href="https://finance.naver.com/sise/sise_upper.naver" target="_blank" rel="noopener">
+              <span class="src-badge" style="background:#b91c1c;">⤒ 상한가</span>
+              <div class="title">오늘의 상한가 종목</div>
+              <div class="meta">네이버 증권</div>
+            </a>
+            <a class="brief-tile" href="https://finance.naver.com/sise/sise_lower.naver" target="_blank" rel="noopener">
+              <span class="src-badge" style="background:#1f2937;">⤓ 하한가</span>
+              <div class="title">오늘의 하한가 종목</div>
+              <div class="meta">네이버 증권</div>
+            </a>
+          </div>
+        </div>
+        <div class="quick-links">
+          <a href="https://news.google.com/search?q=%EC%98%A4%EB%8A%98+%EA%B8%89%EB%93%B1%EC%A3%BC+%EC%9D%B4%EC%9C%A0&hl=ko" target="_blank" rel="noopener">왜 급등했나 ↗</a>
+          <a href="https://news.google.com/search?q=%EC%98%A4%EB%8A%98+%EA%B8%89%EB%9D%BD%EC%A3%BC+%EC%9D%B4%EC%9C%A0&hl=ko" target="_blank" rel="noopener">왜 급락했나 ↗</a>
+          <a href="https://www.hankyung.com/stock" target="_blank" rel="noopener">한경 증권 ↗</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 THEMES -->
+  <section>
+    <div class="section-head">
+      <h2>6대 테마주</h2>
+      <span class="hint">종목 = 시세, 📰 뉴스 = 종목별 뉴스, 🚀/📉 = 테마 급등·급락 검색</span>
+    </div>
+    <div class="grid grid-themes" id="themes-grid">
+      <!-- Cards injected by script -->
+    </div>
+  </section>
+
+  <!-- NEWS -->
+  <section>
+    <div class="section-head">
+      <h2>마켓 뉴스</h2>
+      <span class="hint">글로벌 / 한국 주요 미디어</span>
+    </div>
+    <div class="grid grid-news">
+
+      <div class="news-card">
+        <div class="nh">
+          <h3>글로벌 마켓 뉴스</h3>
+          <span class="src-pill">English · Live</span>
+        </div>
+        <div class="news-list">
+          <a class="news-item" data-en="true" href="https://finance.yahoo.com/topic/stock-market-news/" target="_blank" rel="noopener">
+            <span class="src yh">Yahoo</span>
+            <span class="title">U.S. Stock Market News — 마켓 핵심 헤드라인</span>
+            <span class="arrow">↗</span>
+          </a>
+          <a class="news-item" data-en="true" href="https://www.bloomberg.com/markets/stocks" target="_blank" rel="noopener">
+            <span class="src bbg">BBG</span>
+            <span class="title">Bloomberg Stocks — 글로벌 주식 뉴스</span>
+            <span class="arrow">↗</span>
+          </a>
+          <a class="news-item" data-en="true" href="https://www.reuters.com/markets/us/" target="_blank" rel="noopener">
+            <span class="src reu">Reuters</span>
+            <span class="title">Reuters U.S. Markets — 시황·기업 속보</span>
+            <span class="arrow">↗</span>
+          </a>
+          <a class="news-item" data-en="true" href="https://www.cnbc.com/markets/" target="_blank" rel="noopener">
+            <span class="src cnbc">CNBC</span>
+            <span class="title">CNBC Markets — 미국장 라이브</span>
+            <span class="arrow">↗</span>
+          </a>
+          <a class="news-item" data-en="true" href="https://www.wsj.com/news/markets" target="_blank" rel="noopener">
+            <span class="src wsj">WSJ</span>
+            <span class="title">WSJ Markets — 심층 마켓 분석</span>
+            <span class="arrow">↗</span>
+          </a>
+          <a class="news-item" data-en="true" href="https://www.ft.com/markets" target="_blank" rel="noopener">
+            <span class="src ft">FT</span>
+            <span class="title">Financial Times Markets — 글로벌 시각</span>
+            <span class="arrow">↗</span>
+          </a>
+          <a class="news-item" data-en="true" href="https://seekingalpha.com/market-news" target="_blank" rel="noopener">
+            <span class="src yh" style="background:#ff6f00;">SA</span>
+            <span class="title">Seeking Alpha Market News — 종목 뉴스 피드</span>
+            <span class="arrow">↗</span>
+          </a>
+          <a class="news-item" data-en="true" href="https://www.marketwatch.com/" target="_blank" rel="noopener">
+            <span class="src wsj" style="background:#0a8a3e;">MW</span>
+            <span class="title">MarketWatch — 실시간 시장 데이터·뉴스</span>
+            <span class="arrow">↗</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="news-card">
+        <div class="nh">
+          <h3>국내 / 국문 뉴스</h3>
+          <span class="src-pill">한국어 · 라이브</span>
+        </div>
+        <div class="news-list">
+          <a class="news-item" href="https://news.naver.com/breakingnews/section/101/258" target="_blank" rel="noopener">
+            <span class="src naver">NAVER</span>
+            <span class="title">네이버 증권 뉴스 — 증권/마켓 속보</span>
+            <span class="arrow">↗</span>
+          </a>
+          <a class="news-item" href="https://www.hankyung.com/globalmarket" target="_blank" rel="noopener">
+            <span class="src han">한경</span>
+            <span class="title">한국경제 글로벌마켓 — 미국장·환율</span>
+            <span class="arrow">↗</span>
+          </a>
+          <a class="news-item" href="https://stock.mk.co.kr/" target="_blank" rel="noopener">
+            <span class="src mk">매경</span>
+            <span class="title">매일경제 증권 — KOSPI/KOSDAQ 시황</span>
+            <span class="arrow">↗</span>
+          </a>
+          <a class="news-item" href="https://www.edaily.co.kr/News/Stock" target="_blank" rel="noopener">
+            <span class="src ed">이데일리</span>
+            <span class="title">이데일리 증권 — 종목·테마 분석</span>
+            <span class="arrow">↗</span>
+          </a>
+          <a class="news-item" href="https://www.yna.co.kr/economy/finance" target="_blank" rel="noopener">
+            <span class="src dt">연합</span>
+            <span class="title">연합뉴스 금융 — 환율·금융정책</span>
+            <span class="arrow">↗</span>
+          </a>
+          <a class="news-item" href="https://zdnet.co.kr/news/?lstcode=0050" target="_blank" rel="noopener">
+            <span class="src zd">ZDNet</span>
+            <span class="title">ZDNet Korea 산업 — AI/반도체/IT</span>
+            <span class="arrow">↗</span>
+          </a>
+          <a class="news-item" href="https://kr.investing.com/news/stock-market-news" target="_blank" rel="noopener">
+            <span class="src dt" style="background:#0d1f2d;">Inv</span>
+            <span class="title">Investing.com KR — 글로벌 증시 뉴스</span>
+            <span class="arrow">↗</span>
+          </a>
+          <a class="news-item" href="https://www.thebell.co.kr/free/Content/ArticleList.asp?ctgrp=stockMarket" target="_blank" rel="noopener">
+            <span class="src ed" style="background:#1f2937;">더벨</span>
+            <span class="title">더벨 — 자본시장·기업 분석</span>
+            <span class="arrow">↗</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    데이터: TradingView · Yahoo Finance · Naver Finance &nbsp;|&nbsp; 본 페이지는 정보 제공용이며 투자 자문이 아닙니다.
+    <br/>
+    페이지를 새로고침(<b>F5</b>)하면 모든 위젯과 시세가 갱신됩니다.
+  </footer>
+</div>
+
+<script>
+/* ============ Live clock ============ */
+function pad(n){return String(n).padStart(2,'0');}
+function fmtTime(d){return pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());}
+function fmtDate(d){
+  const day=['일','월','화','수','목','금','토'][d.getDay()];
+  return d.getFullYear()+'.'+pad(d.getMonth()+1)+'.'+pad(d.getDate())+' ('+day+')';
+}
+function tick(){
+  const now=new Date();
+  document.getElementById('kst').textContent = fmtTime(new Date(now.toLocaleString('en-US',{timeZone:'Asia/Seoul'})));
+  document.getElementById('ny').textContent = fmtTime(new Date(now.toLocaleString('en-US',{timeZone:'America/New_York'})));
+  document.getElementById('today').textContent = fmtDate(new Date(now.toLocaleString('en-US',{timeZone:'Asia/Seoul'})));
+}
+tick(); setInterval(tick,1000);
+
+/* ============ Translation: separate badge approach ============
+   Why: many sites (Bloomberg/WSJ/FT, sometimes Reuters) block the
+   `*.translate.goog` proxy → infinite loading. So we never rewrite the
+   main link. Instead we add small "🌐 KO" / "P" badges that try the
+   proxy on demand, and surface a banner explaining the most reliable
+   route (browser built-in translate). */
+let translateOn = (localStorage.getItem('translateOn') ?? '1') === '1';
+
+// Sites known to block the Google Translate proxy → fall back to Naver Papago website translate
+const PROXY_BLOCKED = ['bloomberg.com','wsj.com','ft.com','seekingalpha.com','barrons.com'];
+
+function gtUrl(url) {
+  try {
+    const u = new URL(url);
+    if (!/^https?:$/.test(u.protocol)) return url;
+    const dashedHost = u.hostname.replace(/-/g,'--').replace(/\./g,'-');
+    const sep = u.search ? '&' : '?';
+    return 'https://' + dashedHost + '.translate.goog' + (u.pathname || '/') + u.search + u.hash + sep + '_x_tr_sl=en&_x_tr_tl=ko&_x_tr_hl=ko';
+  } catch(e) { return url; }
+}
+function papagoUrl(url) {
+  return 'https://papago.naver.com/website?locale=ko&source=en&target=ko&url=' + encodeURIComponent(url);
+}
+function isBlockedHost(url) {
+  try {
+    const h = new URL(url).hostname;
+    return PROXY_BLOCKED.some(d => h.endsWith(d));
+  } catch(e) { return false; }
+}
+
+function makeBadge(label, bg, title, href) {
+  const a = document.createElement('a');
+  a.className = 't-badge';
+  a.target = '_blank';
+  a.rel = 'noopener';
+  a.href = href;
+  a.title = title;
+  a.textContent = label;
+  a.style.cssText = 'margin-left:6px;font-size:10px;padding:2px 7px;border-radius:999px;background:'+bg+';color:#fff;font-weight:700;display:inline-block;vertical-align:middle;text-decoration:none;line-height:1.4;';
+  // Don't trigger parent <a>'s navigation
+  a.addEventListener('click', (e) => { e.stopPropagation(); });
+  return a;
+}
+
+function applyTranslation() {
+  // Always make sure original href is preserved
+  document.querySelectorAll('a[data-en="true"]').forEach(a => {
+    const orig = a.getAttribute('data-orig-href') || a.getAttribute('href');
+    if (!a.getAttribute('data-orig-href')) a.setAttribute('data-orig-href', orig);
+    a.setAttribute('href', orig); // never rewrite
+
+    // Remove any previously injected badges so we re-render fresh
+    a.querySelectorAll('.t-badge, .ko-flag').forEach(el => el.remove());
+
+    if (translateOn) {
+      const blocked = isBlockedHost(orig);
+      if (blocked) {
+        // Papago first for known-blocked sites
+        a.appendChild(makeBadge('P 번역', '#03c75a', 'Naver Papago 사이트 번역으로 열기 (이 사이트는 Google 프록시 차단)', papagoUrl(orig)));
+      } else {
+        a.appendChild(makeBadge('🌐 KO', '#16a34a', 'Google 번역으로 열기 (안 되면 P 버튼 사용)', gtUrl(orig)));
+        a.appendChild(makeBadge('P', '#03c75a', 'Naver Papago 사이트 번역 대안', papagoUrl(orig)));
+      }
+    }
+  });
+  // Show/hide tip banner
+  const tip = document.getElementById('tipBanner');
+  if (tip) tip.style.display = translateOn ? 'flex' : 'none';
+}
+
+function setToggleUI() {
+  const t = document.getElementById('translateToggle');
+  if (translateOn) t.classList.add('on'); else t.classList.remove('on');
+}
+document.getElementById('translateToggle').addEventListener('click', () => {
+  translateOn = !translateOn;
+  localStorage.setItem('translateOn', translateOn ? '1' : '0');
+  setToggleUI();
+  applyTranslation();
+});
+setToggleUI();
+
+// Closeable tip banner (remembered)
+const tipClosed = localStorage.getItem('tipClosed') === '1';
+if (tipClosed) document.getElementById('tipBanner').style.display = 'none';
+document.getElementById('tipClose').addEventListener('click', () => {
+  document.getElementById('tipBanner').style.display = 'none';
+  localStorage.setItem('tipClosed','1');
+});
+
+/* ============ Daily Morning Brief (curated 5-min summaries) ============ */
+const briefs = [
+  {src:'CNBC',  bg:'#005594', title:'Morning Squawk — 미국장 개장전 핵심 이슈',  meta:'영문 · 매일 새로 발행', url:'https://www.cnbc.com/morning-squawk/', en:true, lang:'EN→KO'},
+  {src:'Yahoo', bg:'#6001d2', title:"Morning Brief — 오늘의 마켓 5가지 키포인트", meta:'영문 · 매일 발행',         url:'https://finance.yahoo.com/news/morning-brief/', en:true, lang:'EN→KO'},
+  {src:'Bloomberg', bg:'#d97706', title:'Five Things to Start Your Day',          meta:'영문 · 매일 새벽 발행',     url:'https://www.bloomberg.com/account/newsletters/five-things', en:true, lang:'EN→KO'},
+  {src:'Reuters', bg:'#ef4444', title:'Daily Briefing — 글로벌 마켓 요약',         meta:'영문 · 매일 발행',         url:'https://www.reuters.com/world/', en:true, lang:'EN→KO'},
+  {src:'Axios', bg:'#ec1c24', title:'Axios Markets — 핵심 그래프와 요약',          meta:'영문 · 평일 매일',         url:'https://www.axios.com/newsletters/axios-markets', en:true, lang:'EN→KO'},
+  {src:'한경',  bg:'#1d4ed8', title:'한경 모닝브리프 — 오늘 시장 한 줄 요약',     meta:'한국어 · 매일',            url:'https://www.hankyung.com/newsletter', en:false, lang:'KR'},
+  {src:'매경',  bg:'#dc2626', title:'매경 굿모닝 증권 — 코스피·코스닥 전망',       meta:'한국어 · 매일',            url:'https://stock.mk.co.kr/newsdesk', en:false, lang:'KR'},
+  {src:'네이버', bg:'#03c75a', title:'네이버 증권 마감시황 — 오늘 시장 정리',       meta:'한국어 · 매일',           url:'https://news.naver.com/breakingnews/section/101/258', en:false, lang:'KR'},
+];
+const bg = document.getElementById('brief-grid');
+briefs.forEach(b => {
+  const a = document.createElement('a');
+  a.className = 'brief-tile';
+  a.target = '_blank';
+  a.rel = 'noopener';
+  a.href = b.url;
+  if (b.en) a.setAttribute('data-en','true');
+  a.innerHTML = `
+    <div class="brief-tile-head">
+      <span class="src-badge" style="background:${b.bg};">${b.src}</span>
+      <span class="lang">${b.lang}</span>
+    </div>
+    <div class="title">${b.title}</div>
+    <div class="meta">${b.meta}</div>
+  `;
+  bg.appendChild(a);
+});
+
+/* ============ 6 Theme stocks ============ */
+const themes = [
+  {
+    key:'ai', name:'AI / 반도체', sub:'AI · Semis',
+    icon:'🧠', bg:'#eef2ff', color:'#4338ca',
+    newsUrl:'https://news.google.com/search?q=AI+%EB%B0%98%EB%8F%84%EC%B2%B4&hl=ko',
+    tvSymbol:'NASDAQ:NVDA',
+    aiComment: '데이터센터 capex 사이클 후반 + ASIC 자체칩(TPU·Maia) 침투 위협 = NVDA 점유율 방어 여부가 키. <b>HBM3E/HBM4 양산 일정</b>이 SK하이닉스·삼성전자 트리거.',
+    stocks:[
+      {flag:'us', name:'NVIDIA', ticker:'NVDA', url:'https://finance.yahoo.com/quote/NVDA', news:'https://finance.yahoo.com/quote/NVDA/news'},
+      {flag:'us', name:'AMD', ticker:'AMD', url:'https://finance.yahoo.com/quote/AMD', news:'https://finance.yahoo.com/quote/AMD/news'},
+      {flag:'us', name:'TSMC', ticker:'TSM', url:'https://finance.yahoo.com/quote/TSM', news:'https://finance.yahoo.com/quote/TSM/news'},
+      {flag:'us', name:'Broadcom', ticker:'AVGO', url:'https://finance.yahoo.com/quote/AVGO', news:'https://finance.yahoo.com/quote/AVGO/news'},
+      {flag:'us', name:'ASML', ticker:'ASML', url:'https://finance.yahoo.com/quote/ASML', news:'https://finance.yahoo.com/quote/ASML/news'},
+      {flag:'kr', name:'삼성전자', ticker:'005930', url:'https://finance.naver.com/item/main.naver?code=005930', news:'https://finance.naver.com/item/news.naver?code=005930'},
+      {flag:'kr', name:'SK하이닉스', ticker:'000660', url:'https://finance.naver.com/item/main.naver?code=000660', news:'https://finance.naver.com/item/news.naver?code=000660'},
+      {flag:'kr', name:'한미반도체', ticker:'042700', url:'https://finance.naver.com/item/main.naver?code=042700', news:'https://finance.naver.com/item/news.naver?code=042700'},
+    ]
+  },
+  {
+    key:'battery', name:'2차전지', sub:'EV Battery',
+    icon:'🔋', bg:'#ecfdf5', color:'#047857',
+    newsUrl:'https://news.google.com/search?q=2%EC%B0%A8%EC%A0%84%EC%A7%80&hl=ko',
+    tvSymbol:'NASDAQ:TSLA',
+    aiComment: '중국 LFP 가격 압박 지속 + 캐즘. <b>리튬 가격 바닥 다지기 + 미국 IRA 보조금 + 신차 수주</b> 3박자가 단기 반등 트리거. 테슬라 신모델 + LG엔솔·삼성SDI 신규 수주 watching.',
+    stocks:[
+      {flag:'us', name:'Tesla', ticker:'TSLA', url:'https://finance.yahoo.com/quote/TSLA', news:'https://finance.yahoo.com/quote/TSLA/news'},
+      {flag:'us', name:'Albemarle', ticker:'ALB', url:'https://finance.yahoo.com/quote/ALB', news:'https://finance.yahoo.com/quote/ALB/news'},
+      {flag:'us', name:'Lithium ETF', ticker:'LIT', url:'https://finance.yahoo.com/quote/LIT', news:'https://finance.yahoo.com/quote/LIT/news'},
+      {flag:'kr', name:'LG에너지솔루션', ticker:'373220', url:'https://finance.naver.com/item/main.naver?code=373220', news:'https://finance.naver.com/item/news.naver?code=373220'},
+      {flag:'kr', name:'삼성SDI', ticker:'006400', url:'https://finance.naver.com/item/main.naver?code=006400', news:'https://finance.naver.com/item/news.naver?code=006400'},
+      {flag:'kr', name:'에코프로비엠', ticker:'247540', url:'https://finance.naver.com/item/main.naver?code=247540', news:'https://finance.naver.com/item/news.naver?code=247540'},
+      {flag:'kr', name:'포스코퓨처엠', ticker:'003670', url:'https://finance.naver.com/item/main.naver?code=003670', news:'https://finance.naver.com/item/news.naver?code=003670'},
+      {flag:'kr', name:'엘앤에프', ticker:'066970', url:'https://finance.naver.com/item/main.naver?code=066970', news:'https://finance.naver.com/item/news.naver?code=066970'},
+    ]
+  },
+  {
+    key:'bio', name:'바이오 / 제약', sub:'Bio · Pharma',
+    icon:'🧬', bg:'#fdf2f8', color:'#be185d',
+    newsUrl:'https://news.google.com/search?q=%EB%B0%94%EC%9D%B4%EC%98%A4+%EC%A0%9C%EC%95%BD&hl=ko',
+    tvSymbol:'NYSE:LLY',
+    aiComment: 'GLP-1(비만치료제) 1차 정점 후 <b>2차 적응증 확장(알츠하이머·심혈관·MASH)</b> 모멘텀이 다음 트리거. 알테오젠 SC 라이센스 추가 계약, 셀트리온 미국 ZYMFENTRA 처방 데이터, 대형 M&A 기대.',
+    stocks:[
+      {flag:'us', name:'Eli Lilly', ticker:'LLY', url:'https://finance.yahoo.com/quote/LLY', news:'https://finance.yahoo.com/quote/LLY/news'},
+      {flag:'us', name:'Novo Nordisk', ticker:'NVO', url:'https://finance.yahoo.com/quote/NVO', news:'https://finance.yahoo.com/quote/NVO/news'},
+      {flag:'us', name:'Moderna', ticker:'MRNA', url:'https://finance.yahoo.com/quote/MRNA', news:'https://finance.yahoo.com/quote/MRNA/news'},
+      {flag:'us', name:'Vertex', ticker:'VRTX', url:'https://finance.yahoo.com/quote/VRTX', news:'https://finance.yahoo.com/quote/VRTX/news'},
+      {flag:'kr', name:'삼성바이오로직스', ticker:'207940', url:'https://finance.naver.com/item/main.naver?code=207940', news:'https://finance.naver.com/item/news.naver?code=207940'},
+      {flag:'kr', name:'셀트리온', ticker:'068270', url:'https://finance.naver.com/item/main.naver?code=068270', news:'https://finance.naver.com/item/news.naver?code=068270'},
+      {flag:'kr', name:'알테오젠', ticker:'196170', url:'https://finance.naver.com/item/main.naver?code=196170', news:'https://finance.naver.com/item/news.naver?code=196170'},
+      {flag:'kr', name:'SK바이오팜', ticker:'326030', url:'https://finance.naver.com/item/main.naver?code=326030', news:'https://finance.naver.com/item/news.naver?code=326030'},
+    ]
+  },
+  {
+    key:'defense', name:'방산', sub:'Defense',
+    icon:'🛡️', bg:'#f1f5f9', color:'#1e293b',
+    newsUrl:'https://news.google.com/search?q=%EB%B0%A9%EC%82%B0+%EC%A3%BC%EC%8B%9D&hl=ko',
+    tvSymbol:'NYSE:LMT',
+    aiComment: '우크라 + 중동 + 동아시아 안보 환경 = <b>구조적 멀티이어 사이클</b>. 한화에어로의 K9·천무 폴란드 추가 계약, LIG넥스원 천궁-II 사우디·UAE 수출, 미국 NDAA 예산이 catalyst.',
+    stocks:[
+      {flag:'us', name:'Lockheed Martin', ticker:'LMT', url:'https://finance.yahoo.com/quote/LMT', news:'https://finance.yahoo.com/quote/LMT/news'},
+      {flag:'us', name:'RTX', ticker:'RTX', url:'https://finance.yahoo.com/quote/RTX', news:'https://finance.yahoo.com/quote/RTX/news'},
+      {flag:'us', name:'Northrop Grumman', ticker:'NOC', url:'https://finance.yahoo.com/quote/NOC', news:'https://finance.yahoo.com/quote/NOC/news'},
+      {flag:'us', name:'General Dynamics', ticker:'GD', url:'https://finance.yahoo.com/quote/GD', news:'https://finance.yahoo.com/quote/GD/news'},
+      {flag:'kr', name:'한화에어로스페이스', ticker:'012450', url:'https://finance.naver.com/item/main.naver?code=012450', news:'https://finance.naver.com/item/news.naver?code=012450'},
+      {flag:'kr', name:'LIG넥스원', ticker:'079550', url:'https://finance.naver.com/item/main.naver?code=079550', news:'https://finance.naver.com/item/news.naver?code=079550'},
+      {flag:'kr', name:'한국항공우주', ticker:'047810', url:'https://finance.naver.com/item/main.naver?code=047810', news:'https://finance.naver.com/item/news.naver?code=047810'},
+      {flag:'kr', name:'현대로템', ticker:'064350', url:'https://finance.naver.com/item/main.naver?code=064350', news:'https://finance.naver.com/item/news.naver?code=064350'},
+    ]
+  },
+  {
+    key:'nuclear', name:'원전', sub:'Nuclear · Power',
+    icon:'⚛️', bg:'#fef3c7', color:'#b45309',
+    newsUrl:'https://news.google.com/search?q=%EC%9B%90%EC%A0%84+%EC%A3%BC%EC%8B%9D&hl=ko',
+    tvSymbol:'NASDAQ:CEG',
+    aiComment: 'AI 데이터센터 전력 수요 폭증 → <b>SMR(소형모듈원전) 모멘텀이 핵심</b>. 두산에너빌리티 = SMR 메인 수혜주, CEG·VST는 미국 데이터센터 PPA(전력공급계약) 추가 발표 여부가 단기 trigger.',
+    stocks:[
+      {flag:'us', name:'Constellation', ticker:'CEG', url:'https://finance.yahoo.com/quote/CEG', news:'https://finance.yahoo.com/quote/CEG/news'},
+      {flag:'us', name:'Vistra', ticker:'VST', url:'https://finance.yahoo.com/quote/VST', news:'https://finance.yahoo.com/quote/VST/news'},
+      {flag:'us', name:'Cameco', ticker:'CCJ', url:'https://finance.yahoo.com/quote/CCJ', news:'https://finance.yahoo.com/quote/CCJ/news'},
+      {flag:'us', name:'BWX Technologies', ticker:'BWXT', url:'https://finance.yahoo.com/quote/BWXT', news:'https://finance.yahoo.com/quote/BWXT/news'},
+      {flag:'kr', name:'두산에너빌리티', ticker:'034020', url:'https://finance.naver.com/item/main.naver?code=034020', news:'https://finance.naver.com/item/news.naver?code=034020'},
+      {flag:'kr', name:'한전기술', ticker:'052690', url:'https://finance.naver.com/item/main.naver?code=052690', news:'https://finance.naver.com/item/news.naver?code=052690'},
+      {flag:'kr', name:'우진', ticker:'105840', url:'https://finance.naver.com/item/main.naver?code=105840', news:'https://finance.naver.com/item/news.naver?code=105840'},
+      {flag:'kr', name:'비에이치아이', ticker:'083650', url:'https://finance.naver.com/item/main.naver?code=083650', news:'https://finance.naver.com/item/news.naver?code=083650'},
+    ]
+  },
+  {
+    key:'robot', name:'로봇', sub:'Robotics',
+    icon:'🤖', bg:'#e0f2fe', color:'#0369a1',
+    newsUrl:'https://news.google.com/search?q=%EB%A1%9C%EB%B4%87+%EC%A3%BC%EC%8B%9D&hl=ko',
+    tvSymbol:'NASDAQ:ISRG',
+    aiComment: '휴머노이드(Optimus·Figure·1X)는 <b>실증→양산까지 시간 필요</b> — 단기 변동성 큼. 산업용·협동 로봇(레인보우로보틱스·두산로보틱스·에스피지) 신규 수주가 단기 catalyst.',
+    stocks:[
+      {flag:'us', name:'Intuitive Surgical', ticker:'ISRG', url:'https://finance.yahoo.com/quote/ISRG', news:'https://finance.yahoo.com/quote/ISRG/news'},
+      {flag:'us', name:'ABB Ltd', ticker:'ABBNY', url:'https://finance.yahoo.com/quote/ABBNY', news:'https://finance.yahoo.com/quote/ABBNY/news'},
+      {flag:'us', name:'Symbotic', ticker:'SYM', url:'https://finance.yahoo.com/quote/SYM', news:'https://finance.yahoo.com/quote/SYM/news'},
+      {flag:'us', name:'Rockwell Automation', ticker:'ROK', url:'https://finance.yahoo.com/quote/ROK', news:'https://finance.yahoo.com/quote/ROK/news'},
+      {flag:'kr', name:'두산로보틱스', ticker:'454910', url:'https://finance.naver.com/item/main.naver?code=454910', news:'https://finance.naver.com/item/news.naver?code=454910'},
+      {flag:'kr', name:'레인보우로보틱스', ticker:'277810', url:'https://finance.naver.com/item/main.naver?code=277810', news:'https://finance.naver.com/item/news.naver?code=277810'},
+      {flag:'kr', name:'에스피지', ticker:'058610', url:'https://finance.naver.com/item/main.naver?code=058610', news:'https://finance.naver.com/item/news.naver?code=058610'},
+      {flag:'kr', name:'로보스타', ticker:'090360', url:'https://finance.naver.com/item/main.naver?code=090360', news:'https://finance.naver.com/item/news.naver?code=090360'},
+    ]
+  },
+];
+
+const grid = document.getElementById('themes-grid');
+themes.forEach(t => {
+  const stockHtml = t.stocks.map(s => {
+    // Google News 검색 (한국어) - 종목명 기반
+    const gNews = `https://news.google.com/search?q=${encodeURIComponent(s.name)}&hl=ko`;
+    const newsHref = s.news || gNews;
+    return `
+    <div class="stock-row" style="grid-template-columns:44px 1fr auto auto;">
+      <span class="flag ${s.flag}">${s.flag.toUpperCase()}</span>
+      <a href="${s.url}" target="_blank" rel="noopener" style="display:block;text-decoration:none;color:inherit;">
+        <div class="name">${s.name}</div>
+        <div class="ticker">${s.ticker}</div>
+      </a>
+      <a class="news-icon" href="${newsHref}" target="_blank" rel="noopener" title="${s.name} 뉴스">📰 뉴스</a>
+      <a class="ext-icon" href="${s.url}" target="_blank" rel="noopener" title="${s.name} 시세">↗</a>
+    </div>
+  `;}).join('');
+
+  const card = document.createElement('div');
+  card.className = 'theme-card';
+  // NOTE: Do NOT include inline <script> tags inside this innerHTML template —
+  // a literal "</" + "script>" inside the outer <script> would prematurely close it.
+  card.innerHTML = `
+    <div class="th-head">
+      <div class="title">
+        <div class="icon" style="background:${t.bg};color:${t.color};">${t.icon}</div>
+        <div>
+          <h3>${t.name}</h3>
+          <div class="sub">${t.sub}</div>
+        </div>
+      </div>
+      <a class="news-link" href="${t.newsUrl}" target="_blank" rel="noopener">테마 검색 ↗</a>
+    </div>
+    <div class="ai-comment" style="border-bottom:1px solid var(--border);">
+      <div class="ai-line"><span class="lk">AI 분석</span><span class="lv">${t.aiComment}</span></div>
+    </div>
+    <div class="stocks">${stockHtml}</div>
+    <div class="theme-mover-bar">
+      <a class="mover up"   data-en="false" href="https://news.google.com/search?q=${encodeURIComponent(t.name)}+%EA%B8%89%EB%93%B1&hl=ko" target="_blank" rel="noopener">🚀 오늘 ${t.name} 급등주 ↗</a>
+      <a class="mover down" data-en="false" href="https://news.google.com/search?q=${encodeURIComponent(t.name)}+%EA%B8%89%EB%9D%BD&hl=ko" target="_blank" rel="noopener">📉 오늘 ${t.name} 급락주 ↗</a>
+      <a class="mover why"  data-en="false" href="https://news.google.com/search?q=${encodeURIComponent(t.name)}+%EC%99%9C+%EC%98%A4%EB%A5%B4%EB%82%98&hl=ko" target="_blank" rel="noopener">❓ 왜 움직였나 ↗</a>
+    </div>
+    <div class="theme-news-embed"></div>
+    <div class="theme-news-toolbar">
+      <span>대표 종목 (${t.tvSymbol.split(':')[1]}) 기준 뉴스</span>
+      <a href="${t.newsUrl}" target="_blank" rel="noopener">테마 전체 뉴스 ↗</a>
+    </div>
+  `;
+
+  // Inject TradingView Timeline widget via DOM (innerHTML doesn't execute scripts)
+  const embedDiv = card.querySelector('.theme-news-embed');
+  const wrap = document.createElement('div');
+  wrap.className = 'tradingview-widget-container';
+  wrap.style.height = '100%';
+  const inner = document.createElement('div');
+  inner.className = 'tradingview-widget-container__widget';
+  inner.style.height = '100%';
+  wrap.appendChild(inner);
+  const sc = document.createElement('script');
+  sc.type = 'text/javascript';
+  sc.async = true;
+  sc.src = 'https://s3.tradingview.com/external-embedding/embed-widget-timeline.js';
+  sc.text = JSON.stringify({
+    feedMode:'symbol',
+    symbol: t.tvSymbol,
+    colorTheme:'light',
+    isTransparent:true,
+    displayMode:'compact',
+    width:'100%',
+    height:'100%',
+    locale:'kr'
+  });
+  wrap.appendChild(sc);
+  embedDiv.appendChild(wrap);
+
+  grid.appendChild(card);
+});
+
+// Apply translation wrapping after themes are rendered
+applyTranslation();
+</script>
+</body>
+</html>
