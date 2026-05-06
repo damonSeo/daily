@@ -1,2 +1,5 @@
 cd ~/Daily\ brief/github-deploy
 git add . && git commit -m "KOSPI to Naver chart, Gold split USD/KRW" && git push
+
+cd ~/Daily\ brief/github-deploy
+git add . && git commit -m "Reorder sections + add gainers/losers analysis" && git push
